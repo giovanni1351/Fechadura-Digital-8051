@@ -4,168 +4,100 @@
 
 
 org 0000h
-LJMP MAIN
+LJMP START
+db "FEI"
 Aberto:
 DB "Aberto"
-DB 0
-
-Errou:
-DB "Senha incorreta"
+DB 0 ;caracter null indica fim da String
+SenhaIncorreta:
+DB "Senha Incorreta"
 DB 0 
 
-
+escreveString:
+    MOV R2, #0
+    rot:
+    MOV A, R2
+    MOVC A,@A+DPTR ;lê a tabela da memória de programa
+    ACALL sendCharacter ; send data in A to LCD module
+    INC R2
+    JNZ rot ; if A is 0, then end of data has been reached - jump out of loop
+    RET
 
 org 0100h
-MAIN:   
+START:
     ACALL lcd_init
-	MOV A, #00h
-	ACALL posicionaCursor
-	MOV 50h,#0
+rotina:
+    MOV 50h,#0
 	MOV 51h,#0
 	MOV 52h,#0
 	MOV 53h,#0
-;teste
-	MOV DPTR,#Aberto ;DPTR = início da palavra FEI
-	ACALL escreveString
-	
-
-
-	jmp $
-;fim teste
-
-;	ACALL SENHA_CORRETA
-;	JMP $  
-
-	ler1:
+    ler1:
 	mov r2, #1
 	acall ler
 	mov 50h, R0 	
 	CJNE r2,#0, ler1
-
+    acall delay
 	ler2:
 	mov r2, #1
 	acall ler
 	mov 51h, R0 
 	CJNE r2,#0, ler2
-
+    acall delay
 	ler3:
 	mov r2, #1
 	acall ler	
 	mov 52h, R0 
 	CJNE r2,#0, ler1
-
+    acall delay
 	ler4:
 	mov r2, #1
 	acall ler
 	mov 53h, R0 
 	CJNE r2,#0, ler1
+    acall delay
 
 	mov r1 , 50h
-	CJNE R1, #1h, SENHA_INCORRETA
+	CJNE R1, #1h, SenhaErrada
 	mov r1 , 51h
-	CJNE R1, #2h, SENHA_INCORRETA
+	CJNE R1, #2h, SenhaErrada
 	mov r1 , 52h
-	CJNE R1, #3h, SENHA_INCORRETA
+	CJNE R1, #3h, SenhaErrada
 	mov r1 , 53h
-	CJNE R1, #4h, SENHA_INCORRETA
-	
-	MOV DPTR,#Aberto ;DPTR = início da palavra FEI
-	ACALL escreveString
-	
+	CJNE R1, #4h, SenhaErrada
 
 
-	jmp $
-;	acall ler
-	;CJNE R0, #1h, MAIN  
- 	;NOP
-	;NOP 
-	;NOP 
-	;NOP 
-	;acall ler
-	;CJNE R0, #2h, MAIN
-	;acall ler
-	;CJNE R0, #3h, MAIN
-	;jmp $
-	
+    acall SenhaCorreta
+    
+    
+
+
 
 	
-;1ABCDEFG
-;00000000B
-;11111110B - O
-;11100111B - P
-;11001111B - E
-;10010111B - N
+	JMP $
+SenhaCorreta:
+    ;acall clearDisplay
+    MOV A, #06h
+    ACALL posicionaCursor
+    MOV DPTR,#Aberto ;DPTR = início da palavra FEI
+    ACALL escreveString
+    CLR P3.5
+    ret
 
-
-SENHA_INCORRETA:
-	MOV DPTR,#Errou ;DPTR = início da palavra FEI
-	ACALL escreveString
-	JMP MAIN
-
-escreveString:
-MOV R2, #0
-rot:
-MOV A, R2
-MOVC A,@A+DPTR ;lê a tabela da memória de programa
-ACALL sendCharacter ; send data in A to LCD module
-INC R2
-JNZ rot ; if A is 0, then end of data has been reached - jump out of loop
-RET
-
-
-
-ler:
-	MOV R0, #0 ; limpa R0 - a primeira tecla é key0
-	; scan row0
-	SETB P0.3 ; setar row3
-	CLR P0.0 ; limpar row0
-	CALL colScan ; chamar a rotina de scanear 
-	JB F0, finish ; | se F0 é 1, pula pra o fim do programaend of progra
-	; | (por que a tecla precionada foi achada e o numero é no R0
-	; scan row1
-	SETB P0.0 ; set row0
-	CLR P0.1 ; clear row1
-	CALL colScan ; call column-scan subroutine
-	JB F0, finish ; | if F0 is set, jump to end of program
-	; | (because the pressed key was found and its number is in R0)
-	; scan row2
-	SETB P0.1 ; set row1
-	CLR P0.2 ; clear row2
-	CALL colScan ; call column-scan subroutine
-	JB F0, finish ; | if F0 is set, jump to end of program
-	; | (because the pressed key was found and its number is in R0)
-	; scan row3
-	SETB P0.2 ; set row2
-	CLR P0.3 ; clear row3
-	CALL colScan ; call column-scan subroutine
-	JB F0, finish ; | if F0 is set, jump to end of program
-	; | (because the pressed key was found and its number is in R0)
-	JMP ler ; | go back to scan row 0
-	; | (this is why row3 is set at the start of the program
-	; | - when the program jumps back to start, row3 has just been scanned)
-finish:
-	CLR F0 
-	MOV P0 ,#11111111B
-	MOV r2, #00h
-	ret ; program execution arrives here when key is found - do nothing
-	; column-scan subroutine
-	colScan:
-	JNB P0.4, gotKey ; if col0 is cleared - key found
-	INC R0 ; otherwise move to next key
-	JNB P0.5, gotKey ; if col1 is cleared - key found
-	INC R0 ; otherwise move to next key
-	JNB P0.6, gotKey ; if col2 is cleared - key found
-	INC R0 ; otherwise move to next key
-	RET ; return from subroutine - key not found
-	gotKey:
-	SETB F0 ; key found - set F0
-	RET ; and return from subroutine
-
+SenhaErrada:
+    MOV A, #40h
+    ACALL posicionaCursor
+    MOV DPTR,#SenhaIncorreta ;DPTR = início da palavra Display
+    ACALL escreveString
+    acall delay 
+    acall clearDisplay
+    jmp rotina
+; initialise the display
+; see instruction set for details
 lcd_init:
 
 	CLR RS		; clear RS - indicates that instructions are being sent to the module
 
-; function set	
+    ; function set	
 	CLR P1.7		; |
 	CLR P1.6		; |
 	SETB P1.5		; |
@@ -176,7 +108,7 @@ lcd_init:
 
 	CALL delay		; wait for BF to clear	
 					; function set sent for first time - tells module to go into 4-bit mode
-; Why is function set high nibble sent twice? See 4-bit operation on pages 39 and 42 of HD44780.pdf.
+    ; Why is function set high nibble sent twice? See 4-bit operation on pages 39 and 42 of HD44780.pdf.
 
 	SETB EN		; |
 	CLR EN		; | negative edge on E
@@ -190,8 +122,8 @@ lcd_init:
 	CALL delay		; wait for BF to clear
 
 
-; entry mode set
-; set to increment with no shift
+    ; entry mode set
+    ; set to increment with no shift
 	CLR P1.7		; |
 	CLR P1.6		; |
 	CLR P1.5		; |
@@ -209,8 +141,8 @@ lcd_init:
 	CALL delay		; wait for BF to clear
 
 
-; display on/off control
-; the display is turned on, the cursor is turned on and blinking is turned on
+    ; display on/off control
+    ; the display is turned on, the cursor is turned on and blinking is turned on
 	CLR P1.7		; |
 	CLR P1.6		; |
 	CLR P1.5		; |
@@ -336,15 +268,63 @@ clearDisplay:
 
 	SETB EN		; |
 	CLR EN		; | negative edge on E
-	mov r7, #20
-	delayChamar:
-;	CALL delay		
-	djnz r7, delay
+	;mov r7, #20
+	;delayChamar:
+    ;	CALL delay		
+	;djnz r7, delay
 
 	RET
 
 
 delay:
-	MOV R0, #01h
+	MOV R0, #50
 	DJNZ R0, $
 	RET
+
+
+ler:
+	MOV R0, #0 ; limpa R0 - a primeira tecla é key0
+	; scan row0
+	SETB P0.3 ; setar row3
+	CLR P0.0 ; limpar row0
+	CALL colScan ; chamar a rotina de scanear 
+	JB F0, finish ; | se F0 é 1, pula pra o fim do programaend of progra
+	; | (por que a tecla precionada foi achada e o numero é no R0
+	; scan row1
+	SETB P0.0 ; set row0
+	CLR P0.1 ; clear row1
+	CALL colScan ; call column-scan subroutine
+	JB F0, finish ; | if F0 is set, jump to end of program
+	; | (because the pressed key was found and its number is in R0)
+	; scan row2
+	SETB P0.1 ; set row1
+	CLR P0.2 ; clear row2
+	CALL colScan ; call column-scan subroutine
+	JB F0, finish ; | if F0 is set, jump to end of program
+	; | (because the pressed key was found and its number is in R0)
+	; scan row3
+	SETB P0.2 ; set row2
+	CLR P0.3 ; clear row3
+	CALL colScan ; call column-scan subroutine
+	JB F0, finish ; | if F0 is set, jump to end of program
+	; | (because the pressed key was found and its number is in R0)
+	JMP ler ; | go back to scan row 0
+	; | (this is why row3 is set at the start of the program
+	; | - when the program jumps back to start, row3 has just been scanned)
+finish:
+	CLR F0 
+	MOV P0 ,#11111111B
+	MOV r2, #00h
+	ret ; program execution arrives here when key is found - do nothing
+	; column-scan subroutine
+	colScan:
+	JNB P0.4, gotKey ; if col0 is cleared - key found
+	INC R0 ; otherwise move to next key
+	JNB P0.5, gotKey ; if col1 is cleared - key found
+	INC R0 ; otherwise move to next key
+	JNB P0.6, gotKey ; if col2 is cleared - key found
+	INC R0 ; otherwise move to next key
+	RET ; return from subroutine - key not found
+	gotKey:
+	SETB F0 ; key found - set F0
+	RET ; and return from subroutine
