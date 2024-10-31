@@ -13,6 +13,11 @@ SenhaIncorreta:
 DB "Senha Incorreta"
 DB 0 
 
+VoltandoAoEstadoNormal:
+DB "Tente novamente"
+DB 0 
+
+
 escreveString:
     MOV R2, #0
     rot:
@@ -69,7 +74,7 @@ rotina:
     acall SenhaCorreta
     
     
-
+	
 
 
 	
@@ -81,15 +86,26 @@ SenhaCorreta:
     MOV DPTR,#Aberto ;DPTR = início da palavra FEI
     ACALL escreveString
     CLR P3.5
-    ret
+    acall delay 
+    acall clearDisplay
+    jmp rotina
 
 SenhaErrada:
     MOV A, #40h
     ACALL posicionaCursor
-    MOV DPTR,#SenhaIncorreta ;DPTR = início da palavra Display
+    MOV DPTR,#SenhaIncorreta ;DPTR = início da palavra SenhaIncorreta
     ACALL escreveString
     acall delay 
     acall clearDisplay
+    acall retornaCursor
+
+	  MOV A, #40h
+    ACALL posicionaCursor
+    MOV DPTR,#VoltandoAoEstadoNormal ;DPTR = início da palavra VoltandoAoEstadoNormal
+    ACALL escreveString
+    acall delay 
+    acall clearDisplay
+
     jmp rotina
 ; initialise the display
 ; see instruction set for details
