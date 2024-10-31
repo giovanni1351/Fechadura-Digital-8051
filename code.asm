@@ -14,7 +14,7 @@ DB "Senha Incorreta"
 DB 0 
 
 VoltandoAoEstadoNormal:
-DB "Tente novamente"
+DB "         Tente novamente"
 DB 0 
 
 
