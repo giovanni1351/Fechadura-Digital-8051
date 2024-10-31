@@ -88,6 +88,7 @@ SenhaCorreta:
     CLR P3.5
     acall delay 
     acall clearDisplay
+		acall LIGARMOTOR
     jmp rotina
 
 SenhaErrada:
@@ -109,6 +110,20 @@ SenhaErrada:
     jmp rotina
 ; initialise the display
 ; see instruction set for details
+
+LIGARMOTOR:
+CLR P3.1
+ACALL delayMotor
+SETB P3.1
+RET
+
+
+delayMotor:
+	MOV R0, #200
+	DJNZ R0, $
+	RET
+
+
 lcd_init:
 
 	CLR RS		; clear RS - indicates that instructions are being sent to the module
