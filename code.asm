@@ -1,128 +1,129 @@
 ; --- Mapeamento de Hardware (8051) ---
-    RS      equ     P1.3    ;Reg Select ligado em P1.3
-    EN      equ     P1.2    ;Enable ligado em P1.2
+    RS      equ     P1.3    ; Reg Select ligado em P1.3 - usado para selecionar o registro do LCD
+    EN      equ     P1.2    ; Enable ligado em P1.2 - usado para habilitar o LCD
 
-
+; Configuração inicial
 org 0000h
-LJMP START
-db "FEI"
+LJMP START                ; Salto para a rotina de inicialização do sistema
+
+
+; Definindo as mensagens de feedback para o display
 Aberto:
-DB "Aberto"
-DB 0 ;caracter null indica fim da String
+DB "Aberto"               ; Mensagem exibida quando a senha está correta
+DB 0                      ; Caracter nulo para indicar o fim da string
+
 SenhaIncorreta:
-DB "Senha Incorreta"
-DB 0 
+DB "Senha Incorreta"      ; Mensagem exibida quando a senha está incorreta
+DB 0
 
 VoltandoAoEstadoNormal:
-DB "         Tente novamente"
-DB 0 
+DB "         Tente novamente" ; Mensagem para nova tentativa após erro de senha
+DB 0
 
-
+; --- Função para escrever strings no LCD ---
 escreveString:
-    MOV R2, #0
-    rot:
-    MOV A, R2
-    MOVC A,@A+DPTR ;lê a tabela da memória de programa
-    ACALL sendCharacter ; send data in A to LCD module
-    INC R2
-    JNZ rot ; if A is 0, then end of data has been reached - jump out of loop
-    RET
+    MOV R2, #0            ; Inicializa o índice R2 para percorrer a string
+rot:
+    MOV A, R2             ; Carrega o índice R2 no acumulador
+    MOVC A, @A+DPTR       ; Lê a tabela de strings na memória de programa
+    ACALL sendCharacter   ; Envia o caractere no acumulador ao LCD
+    INC R2                ; Incrementa o índice
+    JNZ rot               ; Se o valor é 0 (fim da string), sai do loop
+    RET                   ; Retorna ao chamador
 
+; --- Início da rotina principal ---
 org 0100h
 START:
-    ACALL lcd_init
+    ACALL lcd_init        ; Inicializa o LCD
 rotina:
-    MOV 50h,#0
-	MOV 51h,#0
-	MOV 52h,#0
-	MOV 53h,#0
-    ler1:
-	mov r2, #1
-	acall ler
-	mov 50h, R0 	
-	CJNE r2,#0, ler1
-    acall delay
-	ler2:
-	mov r2, #1
-	acall ler
-	mov 51h, R0 
-	CJNE r2,#0, ler2
-    acall delay
-	ler3:
-	mov r2, #1
-	acall ler	
-	mov 52h, R0 
-	CJNE r2,#0, ler1
-    acall delay
-	ler4:
-	mov r2, #1
-	acall ler
-	mov 53h, R0 
-	CJNE r2,#0, ler1
+    MOV 50h, #0           ; Zera registradores para armazenar senha digitada
+    MOV 51h, #0
+    MOV 52h, #0
+    MOV 53h, #0
+
+    ; Leitura da senha digitada pelo usuário
+ler1:
+    mov r2, #1
+    acall ler             ; Lê o primeiro dígito da senha
+    mov 50h, R0           ; Armazena o primeiro dígito
+    CJNE r2, #0, ler1     ; Repete a leitura caso necessário
     acall delay
 
-	mov r1 , 50h
-	CJNE R1, #1h, SenhaErrada
-	mov r1 , 51h
-	CJNE R1, #2h, SenhaErrada
-	mov r1 , 52h
-	CJNE R1, #3h, SenhaErrada
-	mov r1 , 53h
-	CJNE R1, #4h, SenhaErrada
+ler2:
+    mov r2, #1
+    acall ler             ; Lê o segundo dígito da senha
+    mov 51h, R0           ; Armazena o segundo dígito
+    CJNE r2, #0, ler2
+    acall delay
 
+ler3:
+    mov r2, #1
+    acall ler             ; Lê o terceiro dígito da senha
+    mov 52h, R0           ; Armazena o terceiro dígito
+    CJNE r2, #0, ler1
+    acall delay
 
-    acall SenhaCorreta
-    
-    
-	
+ler4:
+    mov r2, #1
+    acall ler             ; Lê o quarto dígito da senha
+    mov 53h, R0           ; Armazena o quarto dígito
+    CJNE r2, #0, ler1
+    acall delay
 
+    ; Verificação da senha digitada
+    mov r1, 50h
+    CJNE R1, #1h, SenhaErrada  ; Verifica se o primeiro dígito é 1
+    mov r1, 51h
+    CJNE R1, #2h, SenhaErrada  ; Verifica se o segundo dígito é 2
+    mov r1, 52h
+    CJNE R1, #3h, SenhaErrada  ; Verifica se o terceiro dígito é 3
+    mov r1, 53h
+    CJNE R1, #4h, SenhaErrada  ; Verifica se o quarto dígito é 4
 
-	
-	JMP $
+    acall SenhaCorreta    ; Caso a senha esteja correta, chama a rotina para abrir a fechadura
+    JMP $                 ; Aguarda uma nova tentativa
+
 SenhaCorreta:
-    ;acall clearDisplay
+    ; Exibe a mensagem de sucesso e ativa o motor
     MOV A, #06h
     ACALL posicionaCursor
-    MOV DPTR,#Aberto ;DPTR = início da palavra FEI
-    ACALL escreveString
-    CLR P3.5
-    acall delay 
-    acall clearDisplay
-		acall LIGARMOTOR
-    jmp rotina
+    MOV DPTR, #Aberto     ; Aponta para a string "Aberto"
+    ACALL escreveString   ; Exibe a mensagem "Aberto"
+    CLR P3.5              ; Desativa o motor
+    acall delay
+    acall clearDisplay    ; Limpa o display
+    acall LIGARMOTOR      ; Liga o motor para abrir a fechadura
+    jmp rotina            ; Retorna para a rotina principal
 
 SenhaErrada:
+    ; Exibe mensagens de erro e retorna para nova tentativa
     MOV A, #40h
     ACALL posicionaCursor
-    MOV DPTR,#SenhaIncorreta ;DPTR = início da palavra SenhaIncorreta
+    MOV DPTR, #SenhaIncorreta
     ACALL escreveString
-    acall delay 
+    acall delay
     acall clearDisplay
     acall retornaCursor
 
-	  MOV A, #40h
+    MOV A, #40h
     ACALL posicionaCursor
-    MOV DPTR,#VoltandoAoEstadoNormal ;DPTR = início da palavra VoltandoAoEstadoNormal
+    MOV DPTR, #VoltandoAoEstadoNormal
     ACALL escreveString
-    acall delay 
+    acall delay
     acall clearDisplay
+    jmp rotina            ; Volta à rotina para nova tentativa
 
-    jmp rotina
-; initialise the display
-; see instruction set for details
-
+; --- Rotina de controle do motor ---
 LIGARMOTOR:
-CLR P3.1
-ACALL delayMotor
-SETB P3.1
-RET
-
+    CLR P3.1              ; Liga o motor para abrir a fechadura
+    ACALL delayMotor      ; Temporizador para o motor
+    SETB P3.1             ; Desliga o motor
+    RET
 
 delayMotor:
-	MOV R0, #200
-	DJNZ R0, $
-	RET
-
+    MOV R0, #200          ; Loop para gerar um atraso no motor
+    DJNZ R0, $
+    RET
 
 lcd_init:
 
