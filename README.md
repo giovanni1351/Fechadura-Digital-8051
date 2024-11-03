@@ -63,10 +63,6 @@ A senha digitada é comparada com a senha correta (1234).
 - delay: Pausa a execução por um intervalo fixo.
 - clearDisplay: Limpa o conteúdo do display.
 
-Screenshots
-Insira as imagens aqui para ilustrar a interface em diferentes estados (Aberto, Senha Incorreta, Tente Novamente)
-
 Vídeo Demonstrativo
 [Coloque aqui o link para o vídeo demonstrativo do sistema em funcionamento]
 
-Esse README serve como guia completo para o funcionamento e estrutura do código, facilitando a compreensão e manutenção do sistema de fechadura digital.
