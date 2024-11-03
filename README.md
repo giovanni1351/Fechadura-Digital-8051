@@ -2,8 +2,8 @@
 
 Este projeto implementa uma fechadura digital em um microcontrolador Intel 8051, que permite ao usuário inserir uma senha de 4 dígitos. Se a senha estiver correta, um motor é ativado para abrir a porta. Caso contrário, o sistema exibe uma mensagem de erro e solicita uma nova tentativa.
 -------
-
-Diagrama de Funcionamento
+## Voce pode encontrar o código aqui: [Code](./code.asm)
+# Diagrama de Funcionamento
 ```mermaid
 graph TD
   A[Início] --> B[Inicializa LCD]
