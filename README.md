@@ -64,7 +64,7 @@ A senha digitada é comparada com a senha correta (1234).
 - clearDisplay: Limpa o conteúdo do display.
 # Conclusão
 
-O objetivo foi atingido com sucesso, conseguimos criar nossa fechadura digital, ela pode ser utilizada em uma porta de cofre, uma porta de residencia, em qualquer situação em que queremos guardar algo seguro
+O objetivo foi atingido com sucesso, conseguimos criar nossa fechadura digital, ela pode ser utilizada em uma porta de cofre, uma porta de residencia, em qualquer situação em que queremos guardar algo seguro. Este trabalho nos foi util para criarmos uma boa base em como o computador funciona, entendemos como as instruções funciona em um computador, e percebemos a importancia de conhecermos a linguagem Assembly. Aprendemos como funciona um laço de repetição, como funciona uma verificação logica, como é lido um input de teclado matricial, como é feito um print, no mais baixo nivel.
 
 Participantes:
 Giovanni Chahin Morassi  RA: 22123025-3
