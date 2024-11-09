@@ -63,6 +63,7 @@ A senha digitada é comparada com a senha correta (1234).
 - delay: Pausa a execução por um intervalo fixo.
 - clearDisplay: Limpa o conteúdo do display.
 
-Vídeo Demonstrativo
-[Coloque aqui o link para o vídeo demonstrativo do sistema em funcionamento]
+Participantes:
+Giovanni Chahin Morassi  RA: 22123025-3
+Laura de Souza Parente   RA: 22123033-7
 
