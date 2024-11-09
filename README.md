@@ -62,6 +62,9 @@ A senha digitada é comparada com a senha correta (1234).
 ### Delay e Limpeza de Display
 - delay: Pausa a execução por um intervalo fixo.
 - clearDisplay: Limpa o conteúdo do display.
+# Conclusão
+
+O objetivo foi atingido com sucesso, conseguimos criar nossa fechadura digital, ela pode ser utilizada em uma porta de cofre, uma porta de residencia, em qualquer situação em que queremos guardar algo seguro
 
 Participantes:
 Giovanni Chahin Morassi  RA: 22123025-3
